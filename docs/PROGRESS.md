@@ -1,143 +1,147 @@
-# PROGRESS — natywny Android na Radxa Dragon Q6A
+# PROGRESS — native Android on the Radxa Dragon Q6A
 
-## Status ogólny
-**Faza aktywna:** Faza 1 — Build GloDroid + target dragon_q6a  
-**Kabel UART:** ❌ Nie dotarł jeszcze (zamówiony ~2026-05-22, ~3 dni)
+> Early bring-up log (project bootstrap through the first full build). For the
+> complete, current technical write-up see `DOCUMENTATION.md`; for the raw boot
+> traces see `../boot-logs/`.
 
----
-
-## 2026-05-22 — Inicjalizacja projektu, weryfikacja środowiska
-
-### Środowisko build (WSL2)
-| Check | Wynik | OK? |
-|-------|-------|-----|
-| Ścieżka | `/home/huber/q6a/project` (natywny FS) | ✅ |
-| Wolne miejsce | 953 GB / 1007 GB | ✅ |
-| RAM w WSL2 | **~25 GB + 12 GB swap** (podbity) | ✅ |
-| CPU | 16 rdzeni | ✅ |
-| Sieć | github.com OK | ✅ |
+## Overall status
+**Active phase:** Phase 1 — Build GloDroid + `dragon_q6a` target
+**UART cable:** ❌ Not arrived yet (ordered ~2026-05-22, ~3 days)
 
 ---
 
-## 2026-05-22 — Faza 0: Rekonesans zakończony ✅
+## 2026-05-22 — Project bootstrap, environment check
 
-### Zebrane dane z Radxa OS na Q6A
+### Build environment (WSL2)
+| Check | Result | OK? |
+|-------|--------|-----|
+| Path | `/home/huber/q6a/project` (native FS) | ✅ |
+| Free space | 953 GB / 1007 GB | ✅ |
+| RAM in WSL2 | **~25 GB + 12 GB swap** (raised) | ✅ |
+| CPU | 16 cores | ✅ |
+| Network | github.com OK | ✅ |
+
+---
+
+## 2026-05-22 — Phase 0: Reconnaissance complete ✅
+
+### Data gathered from Radxa OS on the Q6A
 - dmesg (boot + GPU/display)
-- lsblk / layout partycji
-- zawartość /boot/efi (systemd-boot + pliki kernela)
-- konfiguracja kernela (zcat /proc/config.gz)
-- vulkaninfo (Turnip potwierdzony)
+- lsblk / partition layout
+- contents of /boot/efi (systemd-boot + kernel files)
+- kernel configuration (zcat /proc/config.gz)
+- vulkaninfo (Turnip confirmed)
 - extlinux.conf + systemd-boot entries
 
-### Kluczowe wyniki
+### Key findings
 
-**Boot chain (zweryfikowany):**
-Qualcomm UEFI v2.7 (SPI) → **systemd-boot** (BOOTAA64.EFI, 909 KB) → kernel + DTB z partycji ESP
+**Boot chain (verified):**
+Qualcomm UEFI v2.7 (SPI) → **systemd-boot** (BOOTAA64.EFI, 909 KB) → kernel + DTB from the ESP
 
-- Bootloader to **systemd-boot**, nie U-Boot. extlinux.conf = legacy fallback.
-- Kernel, DTB i initrd są w partycji EFI (FAT32, 1 GB).
-- DTB: `qcs6490-radxa-dragon-q6a.dtb` (184 KB) dostępny bezpośrednio w ESP.
+- The bootloader is **systemd-boot**, not U-Boot. extlinux.conf = legacy fallback.
+- Kernel, DTB and initrd live on the EFI partition (FAT32, 1 GB).
+- DTB: `qcs6490-radxa-dragon-q6a.dtb` (184 KB) available directly on the ESP.
 
-**Kernel 6.18.2-4-qcom:** Binder, Sync, DMA-BUF Heaps, DRM_MSM — wszystko wbudowane. Gotowy do Androida bez rekompilacji (bring-up).
+**Kernel 6.18.2-4-qcom:** Binder, Sync, DMA-BUF Heaps, DRM_MSM — all built in. Ready for Android without recompilation (bring-up).
 
-**GPU:** Turnip Adreno 643, Vulkan 1.3.275 — działa. Firmware: `a660_sqe.fw` + `a660_gmu.bin`.
+**GPU:** Turnip Adreno 643, Vulkan 1.3.275 — working. Firmware: `a660_sqe.fw` + `a660_gmu.bin`.
 
-**Display:** DPU 7.2 → DP kontroler → QMP PHY → hdmi-bridge → HDMI typ A. card0=simpledrm (EFI fb), card1=msm_drm (właściwy DRM).
+**Display:** DPU 7.2 → DP controller → QMP PHY → hdmi-bridge → HDMI type A. card0=simpledrm (EFI fb), card1=msm_drm (the real DRM).
 
-**DoD Fazy 0:** ✅ ARCHITECTURE.md napisany z jasną decyzją boot flow opartą na realnych danych.
+**Phase 0 DoD:** ✅ ARCHITECTURE.md written, with a clear boot-flow decision based on real data.
 
-### TBD z Fazy 0 — ZAMKNIĘTE 2026-05-25
-- [x] `loader.conf` — `timeout 3` (prostota)
-- [x] `RadxaOS-6.18.2-4-qcom.conf` — pełny wpis z UUID, cmdline, ścieżkami
-- [x] DTB binarny — zdekompilowany, analiza zakończona (patrz 2026-05-25)
+### Phase 0 TBD — CLOSED 2026-05-25
+- [x] `loader.conf` — `timeout 3` (simplicity)
+- [x] `RadxaOS-6.18.2-4-qcom.conf` — full entry with UUID, cmdline, paths
+- [x] Binary DTB — decompiled, analysis complete (see 2026-05-25)
 
-### Następny krok
-**Faza 1:** przygotowanie środowiska build GloDroid + szkielet target `dragon_q6a`.
+### Next step
+**Phase 1:** prepare the GloDroid build environment + skeleton of the `dragon_q6a` target.
 
 ---
 
-## 2026-05-22 — Faza 1: start (przerwane)
+## 2026-05-22 — Phase 1: start (interrupted)
 
-### Wykonano
-- Zainstalowano zależności: `ccache 4.5.1`, `device-tree-compiler 1.6.1`, `openjdk-11-jdk 11.0.30`
-- Zainstalowano `repo launcher v2.54` w `~/.local/bin/`
-- Ustalono właściwy branch GloDroid: `master` (Android 13.0.0_r11); branch `android-13.0.0` nie istnieje
-- Utworzono `~/q6a/glodroid/`
+### Done
+- Installed dependencies: `ccache 4.5.1`, `device-tree-compiler 1.6.1`, `openjdk-11-jdk 11.0.30`
+- Installed `repo launcher v2.54` in `~/.local/bin/`
+- Settled on the correct GloDroid branch: `master` (Android 13.0.0_r11); branch `android-13.0.0` does not exist
+- Created `~/q6a/glodroid/`
 
-### Zablokowane — brakujący git config
-`repo init` wymaga tożsamości git. Nie wykonano.
+### Blocked — missing git config
+`repo init` requires a git identity. Not performed.
 
-### Następna sesja — 3 kroki w tej kolejności
+### Next session — 3 steps in this order
 
-**Krok 1 — git config (30 sekund):**
+**Step 1 — git config (30 seconds):**
 ```bash
 git config --global user.email "jerszjerszjersz@proton.me"
 git config --global user.name "Huber"
 ```
 
-**Krok 2 — repo init + sync (uruchom w screen, trwa 3-8 h):**
+**Step 2 — repo init + sync (run in screen, takes 3-8 h):**
 ```bash
 cd ~/q6a/glodroid
 repo init -u https://github.com/GloDroid/glodroid_manifest -b master --depth=1
-# po sukcesie:
+# on success:
 screen -S sync
 repo sync -c -j8 --no-tags --no-clone-bundle
-# Ctrl+A, D żeby odłączyć
+# Ctrl+A, D to detach
 ```
 
-**Krok 3 — pliki z Q6A (pendrive lub cat w terminalu):**
+**Step 3 — files from the Q6A (USB stick or cat in terminal):**
 - `sudo cat /boot/efi/loader/loader.conf`
 - `sudo cat /boot/efi/loader/entries/RadxaOS-6.18.2-4-qcom.conf`
-- DTB binarny: `/boot/efi/RadxaOS/6.18.2-4-qcom/qcs6490-radxa-dragon-q6a.dtb` (184 KB)
-- GPU firmware: `find /usr/lib/firmware /lib/firmware -name "a660*"` → skopiować oba pliki
+- Binary DTB: `/boot/efi/RadxaOS/6.18.2-4-qcom/qcs6490-radxa-dragon-q6a.dtb` (184 KB)
+- GPU firmware: `find /usr/lib/firmware /lib/firmware -name "a660*"` → copy both files
 - Kernel config: `/boot/config-6.18.2-4-qcom`
 
 ---
 
-## 2026-05-23 — Faza 1: repo sync + git config
+## 2026-05-23 — Phase 1: repo sync + git config
 
-### Wykonano (przez użytkownika między sesjami)
-- `git config --global` ustawiony (email + name)
+### Done (by the user between sessions)
+- `git config --global` set (email + name)
 - `repo init -u https://github.com/GloDroid/glodroid_manifest -b master --depth=1` OK
-- `repo sync` zakończony — **136 GB** w `~/q6a/glodroid/`
-- Pełne drzewo AOSP + GloDroid gotowe
+- `repo sync` finished — **136 GB** in `~/q6a/glodroid/`
+- Full AOSP + GloDroid tree ready
 
 ---
 
-## 2026-05-25 — Faza 1: analiza DTB + utworzenie targetu dragon_q6a
+## 2026-05-25 — Phase 1: DTB analysis + creation of the dragon_q6a target
 
-### Pliki z Q6A — odebrane i zweryfikowane
+### Files from the Q6A — received and verified
 
-| Plik | Status |
+| File | Status |
 |------|--------|
-| `qcs6490-radxa-dragon-q6a.dtb` (184 388 B, świeży) | ✅ główny DTB |
+| `qcs6490-radxa-dragon-q6a.dtb` (184,388 B, fresh) | ✅ main DTB |
 | `a660_gmu.bin` (54 KB) | ✅ GPU GMU firmware |
-| `a660_sqe.fw.zst` (18 KB) | ✅ GPU SQE firmware (skompresowany) |
-| `a660_zap.mbn` (1.1 MB) + `.zst` (2.4 KB) | ⚠️ mamy oba, do weryfikacji po zainstalowaniu zstd |
+| `a660_sqe.fw.zst` (18 KB) | ✅ GPU SQE firmware (compressed) |
+| `a660_zap.mbn` (1.1 MB) + `.zst` (2.4 KB) | ⚠️ have both, to verify after installing zstd |
 | `config-6.18.2-4-qcom` (324 KB) | ✅ kernel config |
 | `loader.conf` | ✅ systemd-boot: timeout 3 |
-| `RadxaOS-6.18.2-4-qcom.conf` | ✅ wpis boot entry z cmdline |
-| `dragon_q6a.dtb` (185 007 B, 13 maja) | ❌ ignorowany — zmodyfikowany z poprzedniego eksperymentu |
+| `RadxaOS-6.18.2-4-qcom.conf` | ✅ boot entry with cmdline |
+| `dragon_q6a.dtb` (185,007 B, May 13) | ❌ ignored — modified from a previous experiment |
 
-### Wyniki analizy DTB
+### DTB analysis results
 
-**HDMI bridge zidentyfikowany:** `compatible = "radxa,ra620"` — Radxa RA620 (DP→HDMI converter)
+**HDMI bridge identified:** `compatible = "radxa,ra620"` — Radxa RA620 (DP→HDMI converter)
 
-**Display pipeline (zweryfikowany z DTB):**
+**Display pipeline (verified from DTB):**
 ```
 DPU (sc7280-dpu, ae01000, port@2)
   → DP controller (sc7280-dp, ae90000, status=okay)
     → QMP PHY (data-lanes 0,1)
       → Radxa RA620 (hdmi-bridge)
-        → HDMI connector typ A
+        → HDMI connector type A
 DSI (ae94000): disabled
 eDP (aea0000): disabled
 ```
 
-**GPU (zweryfikowany z DTB):**
+**GPU (verified from DTB):**
 - `compatible = "qcom,adreno-635.0"`
-- Firmware: `qcom/qcs6490/a660_zap.mbn` (uwaga: podkatalog `qcs6490/`!)
-- OPP: 315 MHz → 900 MHz (9 poziomów)
+- Firmware: `qcom/qcs6490/a660_zap.mbn` (note: `qcs6490/` subdirectory!)
+- OPP: 315 MHz → 900 MHz (9 levels)
 - GMU: `qcom,adreno-gmu-635.0`
 
 **MMC:**
@@ -145,81 +149,81 @@ eDP (aea0000): disabled
 - sdhc_2 = `mmc@8804000` (SD card)
 - `androidboot.boot_devices=platform/soc@0/8804000.mmc`
 
-**Kernel config — kluczowe ustalenia:**
-- SELinux: `CONFIG_SECURITY_SELINUX=y` ale **NIE w CONFIG_LSM** (domyślnie bpf,yama,integrity...)
-  → rozwiązanie: `lsm=...,selinux,...` w cmdline + `selinux=1`
-- `BOOTPARAM=y` → selinux aktywowany przez cmdline
-- F2FS=m, FUSE=m, LOOP=m, DM=m, SQUASHFS=m — moduły, nie built-in
+**Kernel config — key findings:**
+- SELinux: `CONFIG_SECURITY_SELINUX=y` but **NOT in CONFIG_LSM** (defaults to bpf,yama,integrity...)
+  → fix: `lsm=...,selinux,...` in the cmdline + `selinux=1`
+- `BOOTPARAM=y` → selinux enabled via cmdline
+- F2FS=m, FUSE=m, LOOP=m, DM=m, SQUASHFS=m — modules, not built-in
 
-### Target `device/glodroid/dragon_q6a` — UTWORZONY
+### Target `device/glodroid/dragon_q6a` — CREATED
 
-Pliki targetu:
+Target files:
 ```
 device/glodroid/dragon_q6a/
-├── Android.mk              — kopiuje prebuilt kernel do $(PRODUCT_OUT)/kernel
-├── AndroidProducts.mk      — rejestruje dragon_q6a-userdebug
+├── Android.mk              — copies the prebuilt kernel to $(PRODUCT_OUT)/kernel
+├── AndroidProducts.mk      — registers dragon_q6a-userdebug
 ├── BoardConfig.mk          — GPU freedreno, KERNEL_BASE=0x80000000, SELinux cmdline
-├── device.mk               — firmware GPU, Vulkan, Ethernet, no_suspend
+├── device.mk               — GPU firmware, Vulkan, Ethernet, no_suspend
 ├── dragon_q6a.mk           — product: arch, platform=qualcomm, prebuilt kernel
-├── esp/                     — szablon partycji ESP dla systemd-boot
+├── esp/                     — ESP partition template for systemd-boot
 │   ├── loader/loader.conf
 │   ├── loader/entries/android.conf
-│   └── Android/             (tu trafi kernel Image + DTB + ramdisk)
+│   └── Android/             (kernel Image + DTB + ramdisk land here)
 ├── firmware/                — GPU firmware (a660_*)
-├── gensdimg-uefi.sh         — skrypt generujący obraz SD z ESP + Android partitions
+├── gensdimg-uefi.sh         — script that builds the SD image from ESP + Android partitions
 └── prebuilt/
-    ├── Image                — ⚠️ DUMMY (64 KB) — potrzebny prawdziwy z Q6A!
+    ├── Image                — ⚠️ DUMMY (64 KB) — the real one from the Q6A is needed!
     └── qcs6490-radxa-dragon-q6a.dtb  ✅
 ```
 
-### Testy buildu
-- `lunch dragon_q6a-userdebug` ✅ — target rozpoznany
-- `make fstab` ✅ — fstab.dragon_q6a wygenerowany poprawnie
-- `make vulkan.freedreno` ❌ — wymaga `meson` (zainstalowany pip3 --user, wymaga symlink do /usr/local/bin)
+### Build tests
+- `lunch dragon_q6a-userdebug` ✅ — target recognized
+- `make fstab` ✅ — fstab.dragon_q6a generated correctly
+- `make vulkan.freedreno` ❌ — requires `meson` (installed via pip3 --user, needs a symlink into /usr/local/bin)
 
-### BLOKERY
+### BLOCKERS
 
-1. **`meson` nie w PATH buildu** — GloDroid AOSPEXT ustawia `PATH=/usr/bin:/bin:/sbin`, pomijając `~/.local/bin`.
+1. **`meson` not in the build PATH** — GloDroid AOSPEXT sets `PATH=/usr/bin:/bin:/sbin`, skipping `~/.local/bin`.
    Fix: `sudo ln -sf /home/huber/.local/bin/meson /usr/local/bin/meson`
 
-2. **Brak prawdziwego kernela Image** — dummy 64 KB, potrzebny prawdziwy z Q6A:
+2. **No real kernel Image** — dummy 64 KB, the real one from the Q6A is needed:
    ```bash
-   # Na Q6A:
+   # On the Q6A:
    sudo cp /boot/efi/RadxaOS/6.18.2-4-qcom/linux /media/pendrive/Image
    ```
-   Plik ~36 MB (skompresowany) lub ~64 MB (nieskompresowany).
+   File ~36 MB (compressed) or ~64 MB (uncompressed).
 
-3. **`zstd` nie zainstalowany** — potrzebny do weryfikacji firmware.
+3. **`zstd` not installed** — needed to verify firmware.
    Fix: `sudo apt install -y zstd`
 
-### Następne kroki (po odblokowaniu)
+### Next steps (once unblocked)
 
-1. Zainstalować meson + zstd (sudo)
-2. Dostarczyć kernel Image z Q6A
-3. Uruchomić pełny `make droid -j16` (szacowany czas: 2-4h)
-4. Po buildzie: złożyć obraz SD z gensdimg-uefi.sh
-5. **Faza 2:** flash SD → pierwszy boot
+1. Install meson + zstd (sudo)
+2. Provide the kernel Image from the Q6A
+3. Run a full `make droid -j16` (estimated: 2-4h)
+4. After the build: assemble the SD image with gensdimg-uefi.sh
+5. **Phase 2:** flash SD → first boot
 
 ---
 
-## 2026-05-26 — Faza 1: pierwszy pełny build (przerwany ręcznie)
+## 2026-05-26 — Phase 1: first full build (interrupted manually)
 
-### Wykonano
-- Blokery z poprzedniej sesji rozwiązane: meson symlink ✅, zstd ✅, kernel Image 62 MB ✅
-- Uruchomiono `make droid -j8` (`-j8` ze względu na temperaturę CPU >99°C przy wyższych wartościach)
-- Build dotarł do **~74%** (73417/98179 zadań, czas: ~1h3m)
-- Zatrzymany **ręcznie przez użytkownika** (było późno) — brak błędów, stan ninja zachowany
+### Done
+- Blockers from the previous session resolved: meson symlink ✅, zstd ✅, kernel Image 62 MB ✅
+- Started `make droid -j8` (`-j8` because of CPU temperature >99 °C at higher values)
+- Build reached **~74%** (73417/98179 tasks, time: ~1h3m)
+- Stopped **manually by the user** (it was late) — no errors, ninja state preserved
 
-### Stan artefaktów w out/
-- `out/target/product/dragon_q6a/` istnieje z częściowymi artefaktami
-- Ninja wznowi build od 74% bez ponownej kompilacji
+### State of artifacts in out/
+- `out/target/product/dragon_q6a/` exists with partial artifacts
+- Ninja will resume the build from 74% without recompiling
 
-### Następne kroki
-1. Wznowić: `cd ~/q6a/glodroid && source build/envsetup.sh && lunch dragon_q6a-userdebug && make droid -j8`
-2. Pozostałe ~26% — szacowany czas: ~30-60 min
-3. Po buildzie: złożyć obraz SD z `gensdimg-uefi.sh`
-4. **Faza 2:** flash SD → pierwszy boot
+### Next steps
+1. Resume: `cd ~/q6a/glodroid && source build/envsetup.sh && lunch dragon_q6a-userdebug && make droid -j8`
+2. Remaining ~26% — estimated: ~30-60 min
+3. After the build: assemble the SD image with `gensdimg-uefi.sh`
+4. **Phase 2:** flash SD → first boot
 
-**Uwaga:** `-j8` to maksimum ze względu na temperaturę CPU. Nie zwiększać.
+**Note:** `-j8` is the max because of CPU temperature. Do not increase.
 
 ---
