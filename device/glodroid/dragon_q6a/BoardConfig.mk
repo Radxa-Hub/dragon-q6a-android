@@ -6,7 +6,9 @@
 # WiFi (AIC8800D80 on USB, fullmac cfg80211) re-enabled 2026-06-11: kernel driver
 # verified up to ieee80211 phy0; this gate was silently dropping wpa_supplicant
 # (board.mk sets WPA_SUPPLICANT_VERSION — without it the module doesn't exist).
-GD_NO_DEFAULT_BLUETOOTH := true
+# Bluetooth re-enabled 2026-06-13: AIC8800D80 BT = standard USB transport, hci0
+# confirmed live (HCIDEVUP ok, BD_ADDR f4:ab:5c:..); RT abort-loop disarmed via
+# rt_group_sched=0 cmdline. Pulls in bluetooth/board.mk (manifest + sepolicy).
 GD_NO_DEFAULT_CAMERA := true
 GD_NO_DEFAULT_MODEM := true
 

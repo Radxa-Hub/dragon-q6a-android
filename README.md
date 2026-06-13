@@ -18,10 +18,10 @@ UART bring-up debug journey.
 | Boot to UI | ✅ | `sys.boot_completed=1`, zero reboots |
 | Display | ✅ | DPU → DP → Radxa RA620 HDMI bridge; `initcall_blacklist=simpledrm` so HWC takes the panel. EDID forced for Waveshare 7" 1024×600 |
 | GPU | ✅ | Adreno 643, Turnip/freedreno; a660 firmware uncompressed in vendor |
-| USB host + touch | ✅ | dwc3 host, onboard hub, USB touchscreen enumerates |
+| USB host + touch | ✅ | dwc3 host, onboard hub; USB touchscreen as a real touchscreen (IDC forces `touch.deviceType=touchScreen`, else it acts as a mouse cursor) |
 | WiFi | ✅ | AIC8800D80 (USB), fullmac; wpa_supplicant + wificond, no vendor HAL |
 | adb over TCP | ✅ | `service.adb.tcp.port=5555` (USB-C is power-only — no adb-by-cable on this board) |
-| Bluetooth | 🚧 | Same AIC8800D80 chip; bring-up in progress (RT_GROUP_SCHED disarm via `rt_group_sched=0`) |
+| Bluetooth | ✅ | AIC8800D80 BT = standard USB transport; `bluetooth.ko` + `aic_btusb_usb.ko` bring up hci0, GloDroid `btlinux` HAL drives it. Needs `rt_group_sched=0` (disarms an RT_GROUP_SCHED abort-loop) |
 
 ## Hardware
 

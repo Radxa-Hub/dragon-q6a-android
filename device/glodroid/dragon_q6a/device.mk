@@ -2,14 +2,20 @@
 #
 # Device makefile for Radxa Dragon Q6A
 
-# Q6A has no camera or bluetooth hardware/HAL. The default GloDroid camera-provider
-# and btlinux HAL services crash in a loop (camera: "Could not load camera HAL
-# module: -2" + "must be in VINTF manifest"), which trips system_server RescueParty
-# -> reboot,recovery before boot completes. BoardConfig.mk sets these flags for the
-# board/manifest side, but they must ALSO be set here (PRODUCT config) BEFORE
-# inheriting device-common.mk, or its gates still pull the HAL PRODUCT_PACKAGES in.
+# Q6A has no camera HAL. The default GloDroid camera-provider crashes in a loop
+# (camera: "Could not load camera HAL module: -2" + "must be in VINTF manifest"),
+# which trips system_server RescueParty -> reboot,recovery before boot completes.
+# This flag must ALSO be set here (PRODUCT config) BEFORE inheriting
+# device-common.mk, or its gate still pulls the HAL PRODUCT_PACKAGES in.
 GD_NO_DEFAULT_CAMERA := true
-GD_NO_DEFAULT_BLUETOOTH := true
+
+# Bluetooth IS enabled. It was previously disabled because com.android.bluetooth
+# abort-looped on timer_create(CLOCK_BOOTTIME_ALARM)/SCHED_FIFO EPERM caused by
+# CONFIG_RT_GROUP_SCHED=y in the prebuilt kernel -> RescueParty reboot. That mine
+# is now disarmed by rt_group_sched=0 on the kernel cmdline (v35+). The AIC8800D80
+# BT is a standard USB transport (iface e0/01/01); bluetooth.ko + aic_btusb_usb.ko
+# in the ramdisk bring up hci0 (BD_ADDR confirmed live via HCIDEVUP), and GloDroid's
+# btlinux HAL (android.hardware.bluetooth@1.1-service.btlinux) drives it.
 
 $(call inherit-product, device/glodroid/common/device-common.mk)
 
