@@ -1,0 +1,55 @@
+dragon-q6a-android
+Native Android 13 device tree and bring-up resources for the Radxa Dragon Q6A
+(Qualcomm QCS6490).
+
+Copyright 2026 the dragon-q6a-android contributors.
+
+This product includes software and materials developed by third parties.
+The components below retain their own licenses; this repository's own
+contributions (the device tree under device/glodroid/dragon_q6a, scripts,
+and documentation) are licensed under the Apache License, Version 2.0 — see
+the LICENSE file.
+
+================================================================================
+Component attributions
+================================================================================
+
+GloDroid
+  Source of the build target structure and common HAL configuration this
+  device tree plugs into. Apache-2.0.
+  https://github.com/GloDroid
+
+Android Open Source Project (AOSP)
+  The underlying Android 13 platform. Apache-2.0 (with kernel exceptions).
+  https://source.android.com
+
+Linux kernel — RadxaOS prebuilt (6.18.2-4-qcom)
+  prebuilt/Image and prebuilts-radxa/modules.tar.gz are an unmodified
+  redistribution of the Linux kernel and modules from RadxaOS for the
+  Dragon Q6A. Licensed under GPL-2.0. Corresponding source is available
+  from Radxa:
+  https://github.com/radxa  (kernel: linux-6.x qcom branch)
+  GPL-2.0 requires that the corresponding source be made available; the
+  prebuilts here are provided alongside that upstream source offer, not as
+  a replacement for it.
+
+AICsemi AIC8800D80 firmware (firmware-class blobs under the aic8800_fw tree,
+and the BT/WiFi patch firmware)
+  Proprietary, redistributable firmware for the AIC8800D80 combo WiFi/BT
+  chip. © AICSemi. Provided for use on the target hardware only.
+
+Qualcomm Adreno GPU firmware (firmware/a660_sqe.fw, a660_gmu.bin, a660_zap.mbn)
+  Proprietary, redistributable GPU microcode. © Qualcomm Technologies, Inc.
+
+Qualcomm UEFI / boot firmware references and BOOTAA64.EFI (systemd-boot)
+  systemd-boot is part of systemd, LGPL-2.1-or-later.
+  https://github.com/systemd/systemd
+
+Boot logs under boot-logs/ are verbatim kernel/init console output captured
+during bring-up and are provided for reference/debugging only.
+
+"Android" is a trademark of Google LLC. "Radxa" and "Dragon Q6A" are
+trademarks of their respective owners. "Qualcomm" and "Adreno" are
+trademarks of Qualcomm Incorporated. This is an independent, unofficial
+project and is not affiliated with or endorsed by Google, Radxa, Qualcomm,
+or AICSemi.
