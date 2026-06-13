@@ -62,6 +62,13 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     device/glodroid/common/no_suspend.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/no_suspend.dragon_q6a.rc \
 
+# Touchscreen IDC — the WaveShare WS170120 USB panel (Vendor 0eef Product 0005)
+# reports ABS_X/ABS_Y + BTN_TOUCH but no INPUT_PROP_DIRECT, so Android defaults it
+# to POINTER mode (a mouse cursor that cannot tap). This IDC forces
+# touch.deviceType=touchScreen -> DIRECT mode, real absolute touch.
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/idc/Vendor_0eef_Product_0005.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/Vendor_0eef_Product_0005.idc \
+
 # adb over TCP — the only adb path on this board: both USB controllers are
 # host-only (no peripheral/gadget mode), so adb-by-cable is physically
 # impossible. adbd listens on :5555 once a network (WiFi) is up.
