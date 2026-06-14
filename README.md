@@ -22,6 +22,9 @@ UART bring-up debug journey.
 | WiFi | ✅ | AIC8800D80 (USB), fullmac; wpa_supplicant + wificond, no vendor HAL |
 | adb over TCP | ✅ | `service.adb.tcp.port=5555` (USB-C is power-only — no adb-by-cable on this board) |
 | Bluetooth | ✅ | AIC8800D80 BT = standard USB transport; `bluetooth.ko` + `aic_btusb_usb.ko` bring up hci0, GloDroid `btlinux` HAL drives it. Needs `rt_group_sched=0` (disarms an RT_GROUP_SCHED abort-loop) |
+| Launcher | ✅ | Lawnchair as default home (seeded at boot); Launcher3QuickStep kept for recents. APK fetched via `scripts/fetch-lawnchair.sh`, not committed |
+| Screen orientation | ✅ | No accelerometer on this board, so rotation is manual: a built-in `ScreenRotate` app (Quick Settings tile + drawer app) rotates the panel via `IWindowManager.freezeRotation()`. `display_settings.xml` makes WM ignore per-app orientation requests so the user's choice wins |
+| Battery | ✅ | Battery-less SBC; a small health HAL reports full AC power instead of a stuck 0% |
 
 ## Hardware
 
@@ -57,6 +60,8 @@ This device tree plugs into a GloDroid (Android 13, `master`) checkout:
 # inside a synced glodroid tree:
 cp -r device/glodroid/dragon_q6a <glodroid>/device/glodroid/
 # the prebuilt kernel Image + DTB live under device/glodroid/dragon_q6a/prebuilt/
+# fetch the Lawnchair launcher APK (third-party, not committed):
+scripts/fetch-lawnchair.sh
 source build/envsetup.sh
 lunch dragon_q6a-userdebug
 make droid -j8          # -j8 keeps CPU temps in check on the build machine
@@ -73,6 +78,8 @@ GPL-2.0 source offer.
 ```
 device/glodroid/dragon_q6a/   the device tree (BoardConfig, device.mk, esp/, firmware/,
                               prebuilt/, gensdimg-uefi.sh) — drop into a GloDroid checkout
+  apps/                       baked apps: Lawnchair (prebuilt import) + ScreenRotate (rotation UI)
+  health/                     AC-power health HAL for the battery-less board
 docs/                         DOCUMENTATION, ARCHITECTURE, PROGRESS + reference DTS/kernel config
 prebuilts-radxa/              RadxaOS extracts (modules.tar.gz, BOOTAA64.EFI)
 images/                       latest ramdisk + cmdline (.conf) history + Waveshare EDID
@@ -100,7 +107,8 @@ documented in the boot logs and `docs/PROGRESS.md`:
 
 Repository contributions: **Apache-2.0** (`LICENSE`). Prebuilt kernel/modules are
 **GPL-2.0** (RadxaOS); GPU and WiFi/BT firmware are proprietary-redistributable
-vendor blobs. Full attribution and the kernel source offer are in `NOTICE`.
+vendor blobs. The Lawnchair launcher is **GPL-3.0** (fetched at build time, not
+redistributed here). Full attribution and the kernel source offer are in `NOTICE`.
 
 This is an independent, unofficial project, not affiliated with or endorsed by
 Google, Radxa, Qualcomm, or AICSemi.
