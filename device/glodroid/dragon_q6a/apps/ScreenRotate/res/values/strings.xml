@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Screen Orientation</string>
+    <string name="tile_label">Rotate Screen</string>
+    <string name="heading">Screen Orientation</string>
+    <string name="current_prefix">Current: </string>
+    <string name="rotate_next">Rotate 90°</string>
+
+    <string name="rot_0">Landscape (0°)</string>
+    <string name="rot_90">Portrait (90°)</string>
+    <string name="rot_180">Landscape flipped (180°)</string>
+    <string name="rot_270">Portrait flipped (270°)</string>
+</resources>

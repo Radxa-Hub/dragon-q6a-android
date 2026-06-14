@@ -1,0 +1,15 @@
+# Seed Lawnchair as the default HOME role holder.
+#
+# Android 13 has no clean static-overlay path for the HOME role default holder
+# (no config_defaultRoleHolders entry in this tree; the role is resolved by
+# PermissionController from roles.xml). So we seed it the same way that worked at
+# runtime: `cmd package set-home-activity`. The chosen role is stored in /data, so
+# this is effectively a one-time seed — re-running on later boots is harmless and
+# idempotent. It runs after sys.boot_completed=1 so PackageManager and RoleManager
+# are fully up and Lawnchair (installed in /product) has been scanned.
+#
+# Launcher3QuickStep stays installed as the recents/overview provider
+# (config_recentsComponentName); this only changes which activity holds HOME.
+
+on property:sys.boot_completed=1
+    exec_background - root root -- /system/bin/cmd package set-home-activity app.lawnchair/app.lawnchair.LawnchairLauncher

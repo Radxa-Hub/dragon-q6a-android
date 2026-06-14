@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Dragon Q6A health HAL — a thin subclass of the AOSP default AIDL health
+// service that reports a permanently-full, AC-powered state (no battery SBC).
+// `overrides` removes the stock example service so only one IHealth/default
+// instance is installed.
+
+cc_binary {
+    name: "android.hardware.health-service.dragon_q6a",
+    vendor: true,
+    relative_install_path: "hw",
+    defaults: ["libhealth_aidl_impl_user"],
+    static_libs: ["libhealth_aidl_impl"],
+    srcs: ["main.cpp"],
+    vintf_fragments: ["android.hardware.health-service.dragon_q6a.xml"],
+    init_rc: ["android.hardware.health-service.dragon_q6a.rc"],
+    overrides: [
+        "charger",
+        "android.hardware.health-service.example",
+    ],
+}

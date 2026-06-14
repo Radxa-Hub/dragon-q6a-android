@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// ScreenRotate — a tiny built-in screen-rotation control for the Dragon Q6A.
+//
+// The board has no accelerometer, so stock auto-rotate is meaningless; users
+// need a manual way to pick orientation from the UI (no adb). This app provides
+// a Quick Settings tile (tap = rotate 90 deg) and a launcher activity with
+// explicit orientation buttons. It rotates via IWindowManager.freezeRotation()
+// (the same mechanism the system rotation lock uses), which needs the signature
+// permission SET_ORIENTATION — hence platform_apis + the platform certificate.
+
+android_app {
+    name: "ScreenRotate",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+    // Installs to /system (not /product): the product partition interface
+    // (PRODUCT_ENFORCE_PRODUCT_PARTITION_INTERFACE) forbids platform_apis there,
+    // and we need the platform/hidden IWindowManager API.
+    platform_apis: true,
+    certificate: "platform",
+    optimize: {
+        enabled: false,
+    },
+}

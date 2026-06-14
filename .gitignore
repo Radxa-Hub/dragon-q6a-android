@@ -23,3 +23,6 @@ out/
 # Editor / OS noise
 .DS_Store
 *.swp
+
+# Third-party APKs are fetched, not committed (see scripts/fetch-lawnchair.sh)
+*.apk

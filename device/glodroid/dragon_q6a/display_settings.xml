@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Base display policy for the Dragon Q6A panel (uniqueId "local:0").
+
+  ignoreOrientationRequest="true" makes WindowManager ignore per-app orientation
+  requests on this display, so apps (e.g. a phone launcher that forces portrait)
+  cannot hijack the screen rotation. The effective rotation is then driven by the
+  user's choice (Settings.System.USER_ROTATION, accelerometer_rotation=0 — already
+  the defaults), which the on-screen rotation control changes. There is no
+  accelerometer on this board, so there is nothing to auto-rotate; rotation is
+  manual and user-controlled.
+
+  No <config> element: identifier defaults to UNIQUE_ID, matching name="local:0".
+-->
+<display-settings>
+    <display name="local:0" ignoreOrientationRequest="true" />
+</display-settings>

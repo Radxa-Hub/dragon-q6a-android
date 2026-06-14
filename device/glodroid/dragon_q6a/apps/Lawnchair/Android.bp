@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Lawnchair 14 (beta3) baked as the default launcher for Dragon Q6A.
+//
+// The APK is NOT committed to the public repo (third-party GPL-3.0 app); fetch it
+// once with scripts/fetch-lawnchair.sh before building.
+//
+// Imported as a prebuilt because no AOSP-buildable Lawnchair source is vendored.
+// The APK is release-signed by the Lawnchair project, so it is PRESIGNED: Soong
+// must not re-sign it. Installed into /product (product_specific) as a regular
+// (non-privileged) system app — Lawnchair needs no privileged permissions.
+//
+// Recents/overview stays with Launcher3QuickStep (config_recentsComponentName);
+// Lawnchair 14 has no QuickStep build for A13, so it provides HOME only. The
+// default HOME role is seeded once at boot by lawnchair-default-home.rc.
+
+android_app_import {
+    name: "Lawnchair",
+    apk: "Lawnchair.apk",
+    presigned: true,
+    product_specific: true,
+    privileged: false,
+    dex_preopt: {
+        enabled: false,
+    },
+}

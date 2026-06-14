@@ -80,3 +80,36 @@ PRODUCT_COPY_FILES += \
 # impossible. adbd listens on :5555 once a network (WiFi) is up.
 PRODUCT_SYSTEM_PROPERTIES += \
     service.adb.tcp.port=5555
+
+# --- UI / cosmetic bring-up (2026-06-14) ---
+
+# Lawnchair = default launcher, baked as a non-privileged system app in /product.
+# Launcher3QuickStep stays installed as the recents/overview provider
+# (config_recentsComponentName); Lawnchair 14 has no A13 QuickStep build, so it
+# provides HOME only. The HOME role is seeded once at boot by the .rc below
+# (no clean static-overlay path for the HOME role default holder in A13).
+PRODUCT_PACKAGES += \
+    Lawnchair
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/lawnchair-default-home.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/lawnchair-default-home.rc \
+
+# Health HAL — the Q6A is a wall-powered SBC with no battery, so the stock
+# example service reports 0%. This service subclasses it to report full AC power
+# and `overrides` the example (single IHealth/default instance).
+PRODUCT_PACKAGES += \
+    android.hardware.health-service.dragon_q6a
+
+# Orientation base policy — ignore app orientation requests on the panel
+# (uniqueId local:0) so apps can't hijack rotation; the user picks rotation from
+# the on-screen control (no accelerometer on this board → manual, not auto).
+# SettingsProvider defaults (user_rotation=0, accelerometer_rotation=false) are
+# already correct.
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/display_settings.xml:$(TARGET_COPY_OUT_VENDOR)/etc/display_settings.xml \
+
+# ScreenRotate — built-in manual rotation control (Quick Settings tile + drawer
+# app). Platform-signed so it can call IWindowManager.freezeRotation()
+# (SET_ORIENTATION). Lets any user pick orientation from the UI without adb.
+PRODUCT_PACKAGES += \
+    ScreenRotate
