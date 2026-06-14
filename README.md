@@ -48,7 +48,9 @@ zstd -d dragon_q6a_sd_community.img.zst -o dragon_q6a_sd_community.img
 sudo dd if=dragon_q6a_sd_community.img of=/dev/sdX bs=4M status=progress conv=fsync && sync
 ```
 
-Then insert the card and power on. First boot to UI takes ~2 minutes.
+Then insert the card and power on. **The first boot is slow and may reboot itself
+once or twice and sit on a black screen / boot animation for a few minutes — this is
+normal** (it formats `/data` and runs first-boot optimization). Later boots are fast.
 
 ## Build from source
 

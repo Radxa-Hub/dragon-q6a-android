@@ -81,8 +81,11 @@ Android formats `/data` on first boot, so no manual filesystem resize is needed.
 ## Boot it
 
 1. Eject the card and insert it into the Q6A.
-2. Power on. The first boot to UI takes about 2 minutes (it formats `/data` and
-   runs first-boot optimization).
+2. Power on and **be patient on the very first boot.** It formats `/data`, runs
+   first-boot optimization (dexopt), and **may reboot itself once or twice and sit
+   on a black screen or the boot animation for a few minutes — this is normal.**
+   Subsequent boots are much faster. Only treat it as a problem if it keeps
+   power-cycling for more than ~5 minutes; then capture a UART log (below).
 
 ### Optional: watch the boot over UART
 
