@@ -57,8 +57,11 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     sys.use_memfd=true
 
-# Display density for HDMI output (external monitor)
-GD_LCD_DENSITY := 160
+# UI density. This also selects the navigation model: at 170 a small display is
+# treated as a phone form factor and the system draws a 3-button navigation bar;
+# on a large display the same value keeps a tablet form factor and navigation is
+# provided by the taskbar. Either way there is always an on-screen Home/Back/Recents.
+GD_LCD_DENSITY := 170
 
 # Ethernet — RTL8111K/r8169 is primary network
 PRODUCT_COPY_FILES += \

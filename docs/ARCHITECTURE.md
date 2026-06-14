@@ -6,7 +6,7 @@ Data: 2026-05-22 | Faza 0 zakończona
 
 ## Cel
 
-Natywny Android 13 uruchamiany z microSD na Radxa Dragon Q6A, z akceleracją GPU 3D przez Mesa Turnip / Adreno 643. Boot wyłącznie z SD — firmware UEFI na SPI pozostaje nienaruszony.
+Android 13 (GloDroid / AOSP) uruchamiany z microSD na Radxa Dragon Q6A, z akceleracją GPU 3D przez Mesa Turnip / Adreno 643. Boot wyłącznie z SD — firmware UEFI na SPI pozostaje nienaruszony.
 
 ---
 

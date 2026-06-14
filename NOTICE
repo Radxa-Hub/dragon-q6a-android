@@ -1,6 +1,6 @@
 dragon-q6a-android
-Native Android 13 device tree and bring-up resources for the Radxa Dragon Q6A
-(Qualcomm QCS6490).
+Android 13 (GloDroid / AOSP) device tree and bring-up resources for the
+Radxa Dragon Q6A (Qualcomm QCS6490).
 
 Copyright 2026 the dragon-q6a-android contributors.
 

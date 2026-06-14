@@ -1,8 +1,9 @@
 # Android 13 (AOSP / GloDroid) on Radxa Dragon Q6A — Bring-up Documentation
 
-**Status (2026-06-11):** Android 13 boots fully and deterministically from SD card.
-`sys.boot_completed=1` at ~100 s, UI visible on panel, touch working, zero crashes.
-WiFi driver bring-up in final testing; Bluetooth deliberately disabled (see Known Issues).
+**Status:** Android 13 boots fully and deterministically from SD card.
+`sys.boot_completed=1` at ~100 s, UI visible on screen, zero crashes. Display, GPU,
+USB host, touch (with multitouch), WiFi and Bluetooth all work; on-screen navigation
+is present at any display size.
 
 This is an **unofficial community port**. It is not endorsed by Google, Qualcomm or Radxa.
 
@@ -15,7 +16,7 @@ This is an **unofficial community port**. It is not endorsed by Google, Qualcomm
 | Board | Radxa Dragon Q6A (Qualcomm QCS6490 "Kodiak", Adreno 643 GPU) |
 | Boot medium | SD card (8 GB image), UEFI + systemd-boot (BLS type#1 entries) |
 | Kernel | Radxa prebuilt `6.18.2-4-qcom` (binary identical to RadxaOS), GKI-style, many drivers `=m` |
-| Display | Any HDMI monitor via onboard RA620 DP→HDMI bridge; tested with Waveshare 7" HDMI LCD (C) 1024x600 + USB touch |
+| Display | Any HDMI monitor via the onboard RA620 DP→HDMI bridge (kernel reads the display's EDID); USB touchscreens supported, including multitouch |
 | WiFi/BT | AICSemi AIC8800D80 combo, attached via USB (`a69c:8d80`) behind onboard 4-port hub |
 | USB-C | **Power only.** Both USB controllers are host-only (`dr_mode="host"`, no peripheral controller in DT) → **adb over USB cable is impossible on this board.** Use adb over TCP (WiFi) or UART console |
 | Debug UART | UART0 on 40-pin header: GND=pin6, TXD=pin8, RXD=pin10, 115200 8N1, **1.8 V** (use a 1.8 V-capable adapter, e.g. CP2102) |
@@ -46,11 +47,15 @@ in the order they were hit; all are **required** for a working boot.
 | 6 | SF SIGABRT everywhere, `reboot,vold-failed` | (a) FMQ needs ashmem, kernel has no `CONFIG_ASHMEM` → use memfd (`sys.use_memfd=true` + libcutils force-memfd); (b) `fuse.ko` not loaded (`CONFIG_FUSE_FS=m`) | memfd everywhere + fuse.ko in ramdisk |
 | 7 | netd crash loop | Netfilter/xtables modules missing | ~30 netfilter modules added to ramdisk |
 | 8 | system_server crash → RescueParty | `bandwidthSetGlobalAlert` EREMOTEIO — kernel lacks `xt_quota2` | Patch netd: setGlobalAlert/removeGlobalAlert non-fatal |
-| 9 | Sporadic reboot via RescueParty | `com.android.bluetooth` abort loop: `timer_create(CLOCK_BOOTTIME_ALARM)`/SCHED_FIFO EPERM caused by `CONFIG_RT_GROUP_SCHED=y` in the prebuilt kernel | Bluetooth disabled (HAL removed, `def_bluetooth_on=false`). Possible future disarm: `rt_group_sched=0` cmdline (kernel ≥6.13) |
+| 9 | Sporadic reboot via RescueParty | `com.android.bluetooth` abort loop: `timer_create(CLOCK_BOOTTIME_ALARM)`/SCHED_FIFO EPERM caused by `CONFIG_RT_GROUP_SCHED=y` in the prebuilt kernel | `rt_group_sched=0` on the cmdline disarms it. Bluetooth is then fully enabled: `btlinux` HAL + `bluetooth.ko`/`aic_btusb_usb.ko` in the ramdisk → working `hci0` |
 | 10 | Boots fine but panel shows only fbcon (most boots) | GloDroid drm_hwcomposer `ResourceManager::Init()` scans `/dev/dri/card%d` and **breaks at the first stat() failure**; `simpledrm` (built-in, registers from SYSFB) takes minor 0, dies at msm takeover → HWC finds zero devices | `initcall_blacklist=simpledrm_platform_driver_init` → msm becomes card0 deterministically. **This was the single most elusive bug of the port** |
 | 11 | Wrong/failed display mode on DP→HDMI | Flaky EDID over DP-AUX through RA620 at boot | `video=HDMI-A-1:e` (+ optionally `drm.edid_firmware=` with your panel's EDID for stubborn panels) |
 | 12 | No USB at all (no touch, no WiFi) | `dwc3-qcom.ko` (the Qualcomm glue, `=m`) missing from ramdisk | Add to ramdisk; xhci/usbhid/onboard-hub are built-in |
 | 13 | WiFi dead | AIC8800 driver + firmware absent | 4 modules in ramdisk (`rfkill`→`cfg80211`→`aic_load_fw_usb`→`aic8800_fdrv_usb`) + firmware on `/metadata` (see below) |
+| 14 | Bluetooth dead (`hci0` never appears, HAL loops "IBluetoothHci not found") | BT transport modules not loaded | `bluetooth.ko` + `aic_btusb_usb.ko` in the ramdisk (dep: `rfkill`, already present) → `hci0` comes up, `btlinux` HAL registers |
+| 15 | Touch works but single-touch only | `hid-generic` claims the panel | `hid-multitouch.ko` in the ramdisk, loaded before `dwc3-qcom` so it binds the panel → up to 5-point multitouch |
+| 16 | Board reboot-loops before any UI | A kernel module listed in `modules.load` had no `modules.dep` entry → first-stage init's module load is **fatal**, so init aborts and reboots | Every `modules.load` entry must have a matching `modules.dep` line (regenerate `modules.dep` whenever modules are added) |
+| 17 | No on-screen navigation (no Home/Back/Recents) | On a tablet form factor navigation is the taskbar; a phone form factor uses a 3-button bar — the wrong density left neither | `ro.sf.lcd_density=170`: small displays become a phone form factor with a navigation bar; large displays keep the taskbar |
 
 ### WiFi firmware quirk (important!)
 The AICSemi vendor driver does **not** use `request_firmware()` — it opens files directly
@@ -78,8 +83,9 @@ androidboot.slot_suffix=_a androidboot.hardware=dragon_q6a androidboot.selinux=p
 androidboot.boot_devices=soc@0/8804000.mmc lsm=landlock,lockdown,yama,integrity,selinux,bpf
 printk.devkmsg=on
 ```
-(Waveshare 7" users may add `drm.edid_firmware=HDMI-A-1:edid/waveshare_edid.bin` — the EDID
-file ships in the ramdisk.)
+(The cmdline is universal — the kernel reads the connected display's EDID. For a panel
+that ships a bad/empty EDID you can supply one with `drm.edid_firmware=HDMI-A-1:edid/<name>.bin`,
+placing the blob on the ESP under `Android/edid/`.)
 
 ## 4. Developer workflows (Windows/WSL2 host)
 
@@ -93,9 +99,10 @@ file ships in the ramdisk.)
 ## 5. Known issues / open items
 
 - **Dark-boot flakiness (layer 2):** on some boots (esp. quick power cuts) the DP link/RA620 produces no signal at all. Suspected residual-charge / link-training issue; success rate across many cold boots still being characterized.
-- **Bluetooth disabled** (see ladder #9). Re-enable plan: `rt_group_sched=0` cmdline test → restore HAL → flip overlay.
-- WiFi userspace (wpa_supplicant / HAL nl80211 integration) — in progress; adb over TCP (`service.adb.tcp.port=5555`) once wlan0 is up.
-- EDID + GPU firmware should be baked into the real vendor partition (currently ramdisk/metadata).
+- WiFi and Bluetooth are both working (see ladder #9, #13, #14). `wpa_supplicant`
+  brings up `wlan0`; `rt_group_sched=0` + the BT transport modules bring up `hci0`.
+- GPU/WiFi firmware should eventually be baked into the real vendor partition
+  (GPU firmware is in `/vendor/firmware`; WiFi firmware currently lives on `/metadata`).
 - SELinux runs permissive.
 
 ## 6. Licensing & redistribution

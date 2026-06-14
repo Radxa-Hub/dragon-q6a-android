@@ -1,4 +1,4 @@
-# PROGRESS — native Android on the Radxa Dragon Q6A
+# PROGRESS — Android 13 (GloDroid / AOSP) on the Radxa Dragon Q6A
 
 > Early bring-up log (project bootstrap through the first full build). For the
 > complete, current technical write-up see `DOCUMENTATION.md`; for the raw boot
@@ -15,7 +15,7 @@
 ### Build environment (WSL2)
 | Check | Result | OK? |
 |-------|--------|-----|
-| Path | `/home/huber/q6a/project` (native FS) | ✅ |
+| Build tree | on a Linux-native filesystem (not `/mnt/c`) | ✅ |
 | Free space | 953 GB / 1007 GB | ✅ |
 | RAM in WSL2 | **~25 GB + 12 GB swap** (raised) | ✅ |
 | CPU | 16 cores | ✅ |
@@ -210,7 +210,7 @@ device/glodroid/dragon_q6a/
 
 ### Done
 - Blockers from the previous session resolved: meson symlink ✅, zstd ✅, kernel Image 62 MB ✅
-- Started `make droid -j8` (`-j8` because of CPU temperature >99 °C at higher values)
+- Started `make droid` (tune `-j<N>` to your build host)
 - Build reached **~74%** (73417/98179 tasks, time: ~1h3m)
 - Stopped **manually by the user** (it was late) — no errors, ninja state preserved
 
@@ -219,11 +219,9 @@ device/glodroid/dragon_q6a/
 - Ninja will resume the build from 74% without recompiling
 
 ### Next steps
-1. Resume: `cd ~/q6a/glodroid && source build/envsetup.sh && lunch dragon_q6a-userdebug && make droid -j8`
+1. Resume: `cd <glodroid> && source build/envsetup.sh && lunch dragon_q6a-userdebug && make droid`
 2. Remaining ~26% — estimated: ~30-60 min
 3. After the build: assemble the SD image with `gensdimg-uefi.sh`
 4. **Phase 2:** flash SD → first boot
-
-**Note:** `-j8` is the max because of CPU temperature. Do not increase.
 
 ---
