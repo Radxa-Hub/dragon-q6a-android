@@ -11,6 +11,7 @@ to build and flash, the cmdline/ramdisk history, and the full UART bring-up jour
 
 ## What works
 
+
 | Subsystem | Status | Notes |
 |-----------|--------|-------|
 | Boot chain | ✅ | Qualcomm UEFI (SPI) → systemd-boot → kernel + DTB + ramdisk from ESP |
@@ -25,6 +26,8 @@ to build and flash, the cmdline/ramdisk history, and the full UART bring-up jour
 | Launcher | ✅ | Lawnchair as the default home (seeded at boot); Launcher3QuickStep kept for recents. APK fetched via `scripts/fetch-lawnchair.sh`, not committed |
 | Screen orientation | ✅ | No accelerometer on this board, so rotation is manual: a built-in `ScreenRotate` app (Quick Settings tile + drawer app) rotates the panel via `IWindowManager.freezeRotation()`. `display_settings.xml` makes WM ignore per-app orientation requests so the user's choice wins |
 | Battery | ✅ | Battery-less SBC; a small health HAL reports full AC power instead of a stuck 0% |
+
+🔥
 
 ## Hardware
 
