@@ -16,6 +16,8 @@ to build and flash, the cmdline/ramdisk history, and the full UART bring-up jour
 |-----------|--------|-------|
 | Boot chain | ✅ | Qualcomm UEFI (SPI) → systemd-boot → kernel + DTB + ramdisk from ESP |
 | Boot to UI | ✅ | `sys.boot_completed=1`, zero reboots |
+| Storage (SD **or NVMe**) | ✅ | **One universal image boots from either the SD card or an M.2 NVMe SSD.** PCIe PHY (`phy-qcom-qmp-pcie`) baked into the ramdisk; `boot_devices` lists both `mmc` + `1c08000.pcie` (Gen3 ×2). UEFI boots from NVMe, so the SD can be removed. ~1.0 GB/s write / ~0.97 GB/s read (`dd`) |
+| Ethernet | ✅ | Onboard Realtek RTL8168h on PCIe (`1c00000.pcie`); `r8169` in the ramdisk → Gigabit `eth0`, link verified at 1 Gbps full-duplex |
 | Display | ✅ | DPU → DP → onboard RA620 DP→HDMI bridge. `initcall_blacklist=simpledrm` so HWC takes the panel. **Universal HDMI** — the kernel reads the connected display's EDID (`video=HDMI-A-1:e`); no per-panel configuration required |
 | GPU | ✅ | Adreno 643 (A660), OpenGL ES 3.2 / Mesa 23.0 (freedreno), Vulkan 1.3 (Turnip); GPU firmware uncompressed in vendor |
 | USB host + touch | ✅ | dwc3 host + onboard hub; USB touchscreens work as real touchscreens (IDC forces `touch.deviceType=touchScreen`), with **multitouch** via `hid-multitouch` (up to 5 points) |
@@ -34,7 +36,9 @@ to build and flash, the cmdline/ramdisk history, and the full UART bring-up jour
 - **Board:** Radxa Dragon Q6A (Qualcomm QCS6490 / Kodiak)
 - **Display:** any HDMI monitor via the onboard RA620 DP→HDMI bridge (the kernel
   reads the display's EDID); USB touchscreens are supported, including multitouch
-- **Storage:** boots from SD card (`mmc@8804000`); eMMC untouched
+- **Storage:** boots from SD card (`mmc@8804000`) **or M.2 NVMe SSD** (M-key 2230,
+  PCIe Gen3 ×2 on `1c08000.pcie`) — the same universal image works on either; eMMC untouched
+- **Ethernet:** onboard Realtek RTL8168h Gigabit on PCIe (`1c00000.pcie`)
 - **WiFi/BT:** AIC8800D80 combo, USB-attached behind the onboard hub
 - **Debug:** UART0 on the 40-pin header (GND=pin6, board-TX=pin8, board-RX=pin10, 115200 8N1, 1.8 V)
 

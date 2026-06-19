@@ -96,6 +96,55 @@ board's TX line is enough for logging.
 
 ---
 
+## Installing to an NVMe SSD (optional)
+
+From the **universal** release onward the **same image boots from either the SD
+card or an NVMe SSD** — the kernel cmdline lists both boot devices
+(`androidboot.boot_devices=...mmc,...1c08000.pcie`) and the PCIe PHY is baked into
+the ramdisk, so `nvme0n1` is ready at first-stage and `/data`/`super` mount from
+whichever medium holds the partitions.
+
+- **Slot:** onboard M.2 **M-key 2230**, **PCIe Gen3 ×2** (`1c08000.pcie`).
+- Real-world sequential throughput on the reference build: **~1.0 GB/s write,
+  ~0.97 GB/s read** (single-stream `dd`; bursts higher).
+- The board's **UEFI boots from NVMe**, so once the image is on the SSD it is a
+  fully standalone install — the SD card can be removed.
+
+> ⚠️ Writing the image to the SSD **erases everything on it** (including any
+> existing Windows/Linux install).
+
+### Method A — USB→M.2 adapter on a PC (recommended)
+
+If you have a USB→M.2 (NVMe) enclosure/adapter, this is identical to flashing an SD
+card: plug the SSD into the PC and follow **Option B** above, using the NVMe's
+block device as the target (and `sgdisk -e` + `growpart <dev> 13` to grow `/data`
+to the full SSD). Then move the SSD into the board's M.2 slot.
+
+### Method B — no adapter, from a board already running this image
+
+You can clone the running image straight onto the SSD from the board itself:
+
+1. Flash the image to an **SD card** (Options A/B above) and boot the board once
+   with the **NVMe seated in the M.2 slot**.
+2. From a PC on the same network, over `adb` (TCP, `:5555`), stream the image onto
+   the SSD:
+
+   ```bash
+   adb root
+   zstd -dc dragon_q6a_universal_sd_nvme.img.zst \
+     | adb shell 'dd of=/dev/block/nvme0n1 bs=4M conv=fsync'
+   ```
+
+3. **Grow `/data` to the full SSD.** The on-device `sgdisk` is limited, so the
+   simplest path is to grow the partition table later from a PC with a USB→M.2
+   adapter (`sgdisk -e` + `growpart … 13`). Without that step the install still
+   boots fine — `/data` just uses the as-flashed size until grown.
+4. Power off, **remove the SD card**, power on. The board's UEFI falls back to the
+   NVMe ESP and boots Android straight from the SSD. (With both an SD and an
+   NVMe install present, pick the boot device from the UEFI/systemd-boot menu.)
+
+---
+
 ## Troubleshooting
 
 - **No picture on an HDMI monitor** — the image is universal and reads the
